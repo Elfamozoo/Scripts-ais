@@ -1,12 +1,11 @@
 ﻿<#
 .SYNOPSIS
-    Vérifie qui est administrateur local sur une machine locale ou distante.
+    Affiche la liste des administrateurs locaux.
 .DESCRIPTION
-    Liste les membres du groupe Administrateurs local.
-    Détecte les comptes suspects ou non autorisés.
-    Compatible Windows FR, EN et autres langues.
+    Utilise net localgroup, fonctionne sur toutes les versions de Windows.
+    Essaie les noms de groupe dans plusieurs langues.
 .PARAMETER ComputerName
-    Nom de la machine distante (défaut: localhost)
+    Machine cible (defaut: locale)
 .EXAMPLE
     .\local-admin-check.ps1
     .\local-admin-check.ps1 -ComputerName SRV-DC01
@@ -14,69 +13,56 @@
 
 param([string]$ComputerName = $env:COMPUTERNAME)
 
-function Get-LocalAdmins {
-    param([string]$Computer)
+$GroupNames = @(
+    "Administrateurs",    # Francais
+    "Administrators",     # Anglais
+    "Administratoren",    # Allemand
+    "Администраторы"      # Russe
+)
+
+$Members = @()
+$Found = $false
+
+foreach ($Group in $GroupNames) {
+    if ($Found) { break }
     
-    # Méthode 1: net localgroup (marche sur toutes les langues)
-    try {
-        $Output = net localgroup Administrateurs /domain 2>$null
-        if (-not $Output) { $Output = net localgroup Administrators /domain 2>$null }
-        if (-not $Output) { $Output = net localgroup Administratoren /domain 2>$null }
-        if (-not $Output) { 
-            # Essai sans /domain (machine locale)
-            $Output = net localgroup Administrateurs 2>$null
-            if (-not $Output) { $Output = net localgroup Administrators 2>$null }
-            if (-not $Output) { $Output = net localgroup Administratoren 2>$null }
+    if ($ComputerName -eq $env:COMPUTERNAME -or $ComputerName -eq "localhost") {
+        $Output = net localgroup $Group 2>$null
+    } else {
+        $Output = net localgroup $Group /domain 2>$null
+    }
+    
+    if ($Output -and $Output.Count -gt 4) {
+        # Trouver le debut de la liste des membres (ligne apres les ---)
+        $StartLine = -1
+        for ($i = 0; $i -lt $Output.Count; $i++) {
+            if ($Output[$i] -match "^-+$" -and $i -lt ($Output.Count - 1)) {
+                $StartLine = $i + 1
+                break
+            }
         }
         
-        if ($Output) {
-            $Members = $Output | Select-Object -Skip 4 | Where-Object { $_ -and $_ -notmatch "command successfully|la commande|-----" } | ForEach-Object { $_.Trim() }
-            return @($Members | Where-Object { $_ -ne "" })
+        if ($StartLine -gt 0) {
+            $Members = $Output[$StartLine..($Output.Count - 1)] | Where-Object {
+                $_ -and $_.Trim() -ne "" -and $_ -notmatch "command completed|terminee correctement"
+            } | ForEach-Object { $_.Trim() }
         }
-    } catch {
-        # Silently continue
+        $Found = $true
     }
-    
-    # Méthode 2: Get-LocalGroupMember (PowerShell 5.1+)
-    $GroupNames = @("Administrateurs", "Administrators", "Administratoren", "Администраторы")
-    foreach ($GroupName in $GroupNames) {
-        try {
-            $Members = Get-LocalGroupMember -Group $GroupName -ComputerName $Computer -ErrorAction Stop
-            return @($Members | ForEach-Object { $_.Name })
-        } catch {
-            continue
-        }
-    }
-    
-    # Méthode 3: WMI (machine distante)
-    try {
-        $Group = Get-WmiObject -Class Win32_Group -ComputerName $Computer -Filter "SID='S-1-5-32-544'" -ErrorAction Stop
-        if ($Group) {
-            $Members = Get-WmiObject -Class Win32_GroupUser -ComputerName $Computer -Filter "GroupComponent='Win32_Group.Domain=`"$($Group.Domain)`",Name=`"$($Group.Name)`"'" -ErrorAction Stop
-            return @($Members | ForEach-Object { 
-                $Parts = $_.PartComponent -split ","
-                $Name = ($Parts[0] -split "=")[1] -replace '"',''
-                $Domain = ($Parts[1] -split "=")[1] -replace '"','' -replace '>',''
-                "$Domain\$Name"
-            })
-        }
-    } catch { }
-    
-    return $null
 }
 
-$Admins = Get-LocalAdmins -Computer $ComputerName
-
-if (-not $Admins -or $Admins.Count -eq 0) {
-    Write-Host "[ERR] Impossible de récupérer la liste des administrateurs sur $ComputerName" -ForegroundColor Red
-    Write-Host "   Vérifiez que le service 'Remote Registry' tourne ou utilisez PowerShell en admin" -ForegroundColor Yellow
+if ($Members.Count -eq 0) {
+    Write-Host "[ERR] Aucun administrateur trouve ou acces refuse sur $ComputerName" -ForegroundColor Red
+    Write-Host "       Verifiez que vous lancez PowerShell en administrateur" -ForegroundColor Yellow
     exit
 }
 
-Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "----------------------------------------" -ForegroundColor Cyan
 Write-Host "ADMINISTRATEURS LOCAUX - $ComputerName" -ForegroundColor Cyan
-Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "----------------------------------------" -ForegroundColor Cyan
 
-$Admins | ForEach-Object { Write-Host "  $_" }
+foreach ($Member in $Members) {
+    Write-Host "  $Member"
+}
 
-Write-Host "`nTotal: $($Admins.Count) membres" -ForegroundColor Cyan
+Write-Host "`nTotal: $($Members.Count) membre(s)" -ForegroundColor Cyan
