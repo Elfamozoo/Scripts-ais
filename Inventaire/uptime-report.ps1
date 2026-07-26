@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Vérifie l'uptime des serveurs (local ou liste depuis un fichier).
 .DESCRIPTION
@@ -8,7 +8,7 @@
     Nom de la machine ou chemin d'un fichier texte avec une machine par ligne
 .PARAMETER MinUptimeDays
     Afficher uniquement les machines avec uptime < X jours (défaut: 0 = toutes)
-.EXEMPLE
+.EXAMPLE
     .\uptime-report.ps1
     .\uptime-report.ps1 -ComputerName "SRV-DC01","SRV-EXCH01"
     .\uptime-report.ps1 -ComputerName "C:\servers.txt" -MinUptimeDays 7

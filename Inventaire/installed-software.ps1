@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Liste tous les logiciels installés sur une machine locale ou distante.
 .DESCRIPTION
@@ -7,7 +7,7 @@
     Nom de la machine (défaut: localhost)
 .PARAMETER ExportCSV
     Exporter les résultats en CSV
-.EXEMPLE
+.EXAMPLE
     .\installed-software.ps1
     .\installed-software.ps1 -ComputerName SRV-DC01 -ExportCSV
 #>

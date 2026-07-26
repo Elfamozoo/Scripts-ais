@@ -1,4 +1,4 @@
-﻿﻿<#
+﻿<#
 .SYNOPSIS
     Sauvegarde des configurations DHCP, DNS et IIS vers un dossier d'archive.
 .DESCRIPTION
@@ -213,7 +213,7 @@ function Backup-IIS {
     $appCmdFile = Join-Path $iisDir "iis-appcmd.xml"
     try {
         $appcmd = "$env:windir\system32\inetsrv\appcmd.exe"
-        if ($Server -eq $env:COMPUTENAM) {
+        if ($Server -eq $env:COMPUTERNAME) {
             & $appcmd list site /config /xml > $appCmdFile 2>&1
         } else {
             # Version distante : utilisation de Invoke-Command

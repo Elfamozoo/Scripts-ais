@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Vérifie qui est administrateur local sur une machine locale ou distante.
 .DESCRIPTION
@@ -6,7 +6,7 @@
     Détecte les comptes suspects ou non autorisés.
 .PARAMETER ComputerName
     Nom de la machine distante (défaut: localhost)
-.EXEMPLE
+.EXAMPLE
     .\local-admin-check.ps1
     .\local-admin-check.ps1 -ComputerName SRV-DC01
 #>

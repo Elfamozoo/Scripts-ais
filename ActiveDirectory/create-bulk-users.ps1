@@ -84,8 +84,8 @@ foreach ($u in $users) {
     $sam   = $u.SamAccountName.Trim()
     $fname = $u.FirstName.Trim()
     $lname = $u.LastName.Trim()
-    $upn   = $u.UserPrincipalName -or "$($sam)@$( (Get-ADDomain).DNSRoot )"
-    $email = $u.Email -or $upn
+    $upn   = if ($u.UserPrincipalName) { $u.UserPrincipalName } else { "$($sam)@$( (Get-ADDomain).DNSRoot )" }
+    $email = if ($u.Email) { $u.Email } else { $upn }
 
     $displayName = "$fname $lname"
     $ou = if ($u.OU) { $u.OU.Trim() } else { $DefaultOU }

@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Liste l'historique des périphériques USB branchés sur la machine.
 .DESCRIPTION
@@ -6,7 +6,7 @@
     Affiche la date, le périphérique, le fabricant et le numéro de série.
 .PARAMETER Days
     Nombre de jours à analyser (défaut: 30)
-.EXEMPLE
+.EXAMPLE
     .\usb-history.ps1 -Days 7
 #>
 

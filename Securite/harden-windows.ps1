@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Applique des configurations de durcissement de sécurité sur Windows.
 .DESCRIPTION
@@ -6,7 +6,7 @@
     désactive les protocoles obsolètes (SMBv1, LLMNR, NetBIOS), et plus.
 .PARAMETER Level
     Niveau de durcissement: Basic, Standard, Strict (défaut: Standard)
-.EXEMPLE
+.EXAMPLE
     .\harden-windows.ps1
     .\harden-windows.ps1 -Level Strict
 #>

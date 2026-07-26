@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Détecte les attaques brute-force RDP.
 .DESCRIPTION
@@ -8,7 +8,7 @@
     Seuil de tentatives échouées pour alerte (défaut: 10)
 .PARAMETER Hours
     Période d'analyse en heures (défaut: 24)
-.EXEMPLE
+.EXAMPLE
     .\rdp-brute-check.ps1
     .\rdp-brute-check.ps1 -Threshold 5 -Hours 48
 #>

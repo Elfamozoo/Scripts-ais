@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Inventaire complet d'une machine (CPU, RAM, disques, OS, IP, MAC).
 .DESCRIPTION
@@ -8,7 +8,7 @@
     Nom de la machine (défaut: localhost)
 .PARAMETER Credential
     Credentials pour machine distante
-.EXEMPLE
+.EXAMPLE
     .\machine-inventory.ps1
     .\machine-inventory.ps1 -ComputerName SRV-DC01
 #>

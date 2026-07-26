@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Analyse les tentatives de connexion échouées depuis les logs de sécurité Windows.
 .DESCRIPTION
@@ -8,7 +8,7 @@
     Nombre d'heures à analyser (défaut: 24)
 .PARAMETER Threshold
     Seuil d'alertes (défaut: 5 tentatives)
-.EXEMPLE
+.EXAMPLE
     .\failed-logins.ps1 -Hours 48 -Threshold 10
 #>
 

@@ -1,11 +1,11 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Exporte toutes les règles du pare-feu Windows au format CSV.
 .DESCRIPTION
     Liste toutes les règles du pare-feu avec leur nom, action, protocole, ports, profils.
 .PARAMETER FilePath
     Chemin du fichier CSV de sortie.
-.EXEMPLE
+.EXAMPLE
     .\firewall-rules-export.ps1
     .\firewall-rules-export.ps1 -FilePath "C:\temp\firewall.csv"
 #>
