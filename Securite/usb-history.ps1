@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Liste l'historique des périphériques USB branchés sur la machine.
 .DESCRIPTION

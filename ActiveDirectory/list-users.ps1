@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Liste les utilisateurs Active Directory avec nom, email, groupe principal et état.
 .DESCRIPTION

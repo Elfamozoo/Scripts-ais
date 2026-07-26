@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Inventaire complet d'une machine (CPU, RAM, disques, OS, IP, MAC).
 .DESCRIPTION

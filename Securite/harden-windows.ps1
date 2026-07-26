@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Applique des configurations de durcissement de sécurité sur Windows.
 .DESCRIPTION

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Effectue des résolutions DNS complètes (A, MX, CNAME, NS, TXT, AAAA).
 .DESCRIPTION

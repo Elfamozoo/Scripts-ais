@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 .SYNOPSIS
     Rapport complet des tâches planifiées Windows (état, dernière exécution, prochaine exécution).
 .DESCRIPTION

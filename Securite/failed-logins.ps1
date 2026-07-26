@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Analyse les tentatives de connexion échouées depuis les logs de sécurité Windows.
 .DESCRIPTION

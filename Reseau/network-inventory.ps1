@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Inventaire réseau complet : IP, MAC, hostname et détails des interfaces.
 .DESCRIPTION

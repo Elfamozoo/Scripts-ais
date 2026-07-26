@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Liste tous les logiciels installés sur une machine locale ou distante.
 .DESCRIPTION
