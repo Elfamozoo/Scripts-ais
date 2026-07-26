@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Détecte les attaques brute-force RDP.
 .DESCRIPTION
@@ -34,26 +34,26 @@ $FailedByIP = $FailedRDP | Group-Object @{Expression={$_.Properties[18].Value}} 
                   @{N='DernierEssai';E={($_.Group | Sort-Object TimeCreated -Descending | Select-Object -First 1).TimeCreated}} |
     Where-Object Tentatives -ge $Threshold | Sort-Object Tentatives -Descending
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Red
-Write-Host "🚨 DÉTECTION BRUTE-FORCE RDP" -ForegroundColor Red
+Write-Host "---------------------------------------------------" -ForegroundColor Red
+Write-Host "[ALERT] DÉTECTION BRUTE-FORCE RDP" -ForegroundColor Red
 Write-Host "Période: $Hours h  |  Seuil: $Threshold tentatives"
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Red
+Write-Host "---------------------------------------------------" -ForegroundColor Red
 
 if ($FailedByIP) {
     $FailedByIP | ForEach-Object {
-        $Level = if ($_.Tentatives -ge 50) { "🔴 CRITIQUE" } elseif ($_.Tentatives -ge 20) { "🟠 ÉLEVÉ" } else { "🟡 MOYEN" }
+        $Level = if ($_.Tentatives -ge 50) { "[CRIT] CRITIQUE" } elseif ($_.Tentatives -ge 20) { "[HIGH] ÉLEVÉ" } else { "[MED] MOYEN" }
         Write-Host "$Level | $($_.Tentatives)x tentatives de $($_.IP_Source)" -ForegroundColor Red
-        Write-Host "        ↳ $($_.PremierEssai.ToString('dd/MM HH:mm')) → $($_.DernierEssai.ToString('dd/MM HH:mm'))"
+        Write-Host "        -> $($_.PremierEssai.ToString('dd/MM HH:mm')) -> $($_.DernierEssai.ToString('dd/MM HH:mm'))"
     }
 
     # Suggestion blocage
-    Write-Host "`n🔒 Suggestion: bloquer ces IPs avec:" -ForegroundColor Yellow
+    Write-Host "`n[LOCK] Suggestion: bloquer ces IPs avec:" -ForegroundColor Yellow
     $FailedByIP | ForEach-Object {
         Write-Host "   netsh advfirewall firewall add rule name='BLOCK_RDP_$($_.IP_Source)' dir=in action=block protocol=TCP localport=3389 remoteip=$($_.IP_Source)" -ForegroundColor Gray
     }
 } else {
-    Write-Host "✅ Aucune attaque brute-force détectée" -ForegroundColor Green
+    Write-Host "[OK] Aucune attaque brute-force détectée" -ForegroundColor Green
 }
 
 $SuccessCount = ($SuccessRDP | Select-Object @{N='IP';E={$_.Properties[18].Value}} -Unique).Count
-Write-Host "`n📊 Connexions RDP réussies: $($SuccessRDP.Count) depuis $SuccessCount IPs différentes" -ForegroundColor Cyan
+Write-Host "`n[STATS] Connexions RDP réussies: $($SuccessRDP.Count) depuis $SuccessCount IPs différentes" -ForegroundColor Cyan

@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Analyse les tentatives de connexion échouées depuis les logs de sécurité Windows.
 .DESCRIPTION
@@ -21,7 +21,7 @@ $TimeFilter = (Get-Date).AddHours(-$Hours)
 $Events = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4625; StartTime=$TimeFilter} -ErrorAction SilentlyContinue
 
 if (-not $Events) {
-    Write-Host "✅ Aucune tentative échouée trouvée dans les dernières $Hours heures." -ForegroundColor Green
+    Write-Host "[OK] Aucune tentative échouée trouvée dans les dernières $Hours heures." -ForegroundColor Green
     exit
 }
 
@@ -33,21 +33,21 @@ $FailedLogins = $Events | Group-Object @{Expression={$_.Properties[5].Value}}, @
                   @{N='DernierEssai';E={($_.Group | Sort-Object TimeCreated -Descending | Select-Object -First 1).TimeCreated}} |
     Sort-Object Tentatives -Descending
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "🔒 TENTATIVES DE CONNEXION ÉCHOUÉES" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "[LOCK] TENTATIVES DE CONNEXION ÉCHOUÉES" -ForegroundColor Cyan
 Write-Host "Période: $Hours h  |  Seuil alerte: $Threshold tentatives" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 
 $FailedLogins | ForEach-Object {
     $Color = if ($_.Tentatives -ge $Threshold) { "Red" } else { "Yellow" }
-    Write-Host "[$($_.Tentatives)x] $($_.Utilisateur) → $($_.IP_Source)" -ForegroundColor $Color
+    Write-Host "[$($_.Tentatives)x] $($_.Utilisateur) -> $($_.IP_Source)" -ForegroundColor $Color
 }
 
 $TotalIPs = ($FailedLogins | Select-Object IP_Source -Unique).Count
 $TotalUsers = ($FailedLogins | Select-Object Utilisateur -Unique).Count
-Write-Host "`n📊 Résumé: $($FailedLogins.Count) tentatives, $TotalIPs IPs différentes, $TotalUsers utilisateurs ciblés" -ForegroundColor Cyan
+Write-Host "`n[STATS] Résumé: $($FailedLogins.Count) tentatives, $TotalIPs IPs différentes, $TotalUsers utilisateurs ciblés" -ForegroundColor Cyan
 
 # Export CSV
 $ExportPath = "failed-logins_$(Get-Date -Format 'yyyyMMdd-HHmmss').csv"
 $FailedLogins | Export-Csv -Path $ExportPath -NoTypeInformation -Encoding UTF8
-Write-Host "📁 Export: $ExportPath" -ForegroundColor Green
+Write-Host "[FILE] Export: $ExportPath" -ForegroundColor Green

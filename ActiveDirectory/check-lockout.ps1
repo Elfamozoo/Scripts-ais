@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Vérifie et analyse les comptes AD verrouillés (locked-out).
 .DESCRIPTION
@@ -66,12 +66,12 @@ function Write-Log {
     Write-Host "[$t] $Msg" -ForegroundColor $C[$Level]
 }
 
-Write-Host "═══════════════════════════════════════════" -ForegroundColor $C['Box']
+Write-Host "-------------------------------------------" -ForegroundColor $C['Box']
 Write-Host "  ANALYSE DES COMPTES VERROUILLÉS (Lockout)" -ForegroundColor $C['Box']
-Write-Host "═══════════════════════════════════════════" -ForegroundColor $C['Box']
+Write-Host "-------------------------------------------" -ForegroundColor $C['Box']
 
 # ---- 1. Récupération des comptes verrouillés ----
-Write-Log "🔍 Recherche des comptes verrouillés..." 'Info'
+Write-Log "[SEARCH] Recherche des comptes verrouillés..." 'Info'
 
 $params = @{ Properties = @('DisplayName', 'Mail', 'SamAccountName', 'LockedOut',
                              'LockoutTime', 'LastLogonDate', 'BadLogonCount',
@@ -82,16 +82,16 @@ if ($SearchBase) { $params.SearchBase = $SearchBase }
 try {
     $lockedUsers = Get-ADUser -Filter "LockedOut -eq '`$true'" @params
 } catch {
-    Write-Log "❌ Erreur de requête AD : $_" 'Err'
+    Write-Log "[ERR] Erreur de requête AD : $_" 'Err'
     exit 1
 }
 
 if ($lockedUsers.Count -eq 0) {
-    Write-Log "✅ Aucun compte verrouillé trouvé." 'OK'
+    Write-Log "[OK] Aucun compte verrouillé trouvé." 'OK'
     exit 0
 }
 
-Write-Log "⚠️  $($lockedUsers.Count) compte(s) verrouillé(s) détecté(s) !" 'Warn'
+Write-Log "[WARN]  $($lockedUsers.Count) compte(s) verrouillé(s) détecté(s) !" 'Warn'
 
 # ---- 2. Détails pour chaque compte verrouillé ----
 $results = foreach ($u in $lockedUsers) {
@@ -125,7 +125,7 @@ $results = foreach ($u in $lockedUsers) {
 $results | Format-Table -AutoSize -Property Nom, Login, VerrouilleLe, DureeVerrouillage, TentativesEchouees, DernierMauvaisMDP
 
 # ---- 3. Analyse des événements de verrouillage (logs sécurité) ----
-Write-Log "`n📋 Analyse des événements de verrouillage (EventID 4740) sur les dernières $HistoryHours heures..." 'Info'
+Write-Log "`n[CLIP] Analyse des événements de verrouillage (EventID 4740) sur les dernières $HistoryHours heures..." 'Info'
 
 $since = (Get-Date).AddHours(-$HistoryHours)
 $lockoutEvents = @()
@@ -150,15 +150,15 @@ try {
             }
             $lockoutEvents += $events
         } catch {
-            # Pas d'événements ou accès refusé — on continue
+            # Pas d'événements ou accès refusé - on continue
         }
     }
 
     if ($lockoutEvents.Count -gt 0) {
-        Write-Log "🔐 $($lockoutEvents.Count) événements de verrouillage trouvés (source du verrouillage) :" 'Info'
+        Write-Log "[LOCK] $($lockoutEvents.Count) événements de verrouillage trouvés (source du verrouillage) :" 'Info'
         $lockoutEvents | Group-Object User | Sort-Object Count -Descending | ForEach-Object {
             $sources = ($_.Group | Select-Object -ExpandProperty Source -Unique) -join ', '
-            Write-Host "   $($_.Name) : $($_.Count) verrouillage(s) — depuis : $sources" -ForegroundColor Yellow
+            Write-Host "   $($_.Name) : $($_.Count) verrouillage(s) - depuis : $sources" -ForegroundColor Yellow
         }
     } else {
         Write-Log "   Aucun événement 4740 trouvé dans l'historique (vérifiez les permissions EventLog)." 'Warn'
@@ -170,15 +170,15 @@ try {
 # ---- Export CSV ----
 if ($OutputPath) {
     $results | Export-Csv -Path $OutputPath -NoTypeInformation -Encoding UTF8
-    Write-Log "📄 Rapport exporté vers : $OutputPath" 'OK'
+    Write-Log "[FILE] Rapport exporté vers : $OutputPath" 'OK'
 }
 
 # ---- 4. Déverrouillage ----
 if ($Unlock -or $AutoRemediate) {
     if (-not $AutoRemediate) {
-        $confirm = Read-Host "`n🔓 Déverrouiller ces $($lockedUsers.Count) comptes ? (O/N)"
+        $confirm = Read-Host "`n[UNLOCK] Déverrouiller ces $($lockedUsers.Count) comptes ? (O/N)"
         if ($confirm -notin @('O','o','Oui','oui','Y','y','Yes','yes')) {
-            Write-Log "⏹️  Déverrouillage annulé." 'Warn'
+            Write-Log "[STOP]  Déverrouillage annulé." 'Warn'
             exit 0
         }
     }
@@ -189,38 +189,38 @@ if ($Unlock -or $AutoRemediate) {
         if ($PSCmdlet.ShouldProcess($u.SamAccountName, 'Déverrouiller le compte')) {
             try {
                 Unlock-ADAccount -Identity $u.DistinguishedName -ErrorAction Stop
-                Write-Log "🔓 Déverrouillé : $($u.SamAccountName)" 'OK'
+                Write-Log "[UNLOCK] Déverrouillé : $($u.SamAccountName)" 'OK'
                 $unlocked++
             } catch {
-                Write-Log "❌ Échec déverrouillage $($u.SamAccountName) : $_" 'Err'
+                Write-Log "[ERR] Échec déverrouillage $($u.SamAccountName) : $_" 'Err'
                 $errors++
             }
         }
     }
 
-    Write-Host "`n📊 Déverrouillage terminé : $unlocked succès, $errors erreur(s)" -ForegroundColor Cyan
+    Write-Host "`n[STATS] Déverrouillage terminé : $unlocked succès, $errors erreur(s)" -ForegroundColor Cyan
 } else {
-    Write-Host "`n💡 Astuce : Ajoutez -Unlock pour déverrouiller les comptes automatiquement." -ForegroundColor Gray
+    Write-Host "`n[TIP] Astuce : Ajoutez -Unlock pour déverrouiller les comptes automatiquement." -ForegroundColor Gray
 }
 
 # ---- Recommandations ----
-Write-Host "`n═══════════════════════════════════════════" -ForegroundColor $C['Box']
+Write-Host "`n-------------------------------------------" -ForegroundColor $C['Box']
 Write-Host "  RECOMMANDATIONS" -ForegroundColor $C['Box']
-Write-Host "═══════════════════════════════════════════" -ForegroundColor $C['Box']
+Write-Host "-------------------------------------------" -ForegroundColor $C['Box']
 if ($results.Count -gt 5) {
-    Write-Host "  ⚠️  Nombre élevé de verrouillages — vérifiez :" -ForegroundColor Yellow
-    Write-Host "     • Mot de passe compromis partagé"
-    Write-Host "     • Script ou service utilisant d'anciens identifiants"
-    Write-Host "     • Application avec des credentials périmés"
-    Write-Host "     • Attaque par force brute"
+    Write-Host "  [WARN]  Nombre élevé de verrouillages - vérifiez :" -ForegroundColor Yellow
+    Write-Host "     * Mot de passe compromis partagé"
+    Write-Host "     * Script ou service utilisant d'anciens identifiants"
+    Write-Host "     * Application avec des credentials périmés"
+    Write-Host "     * Attaque par force brute"
 }
-Write-Host "  📌 Politique de verrouillage actuelle :" -ForegroundColor Gray
+Write-Host "  [INFO] Politique de verrouillage actuelle :" -ForegroundColor Gray
 try {
     $pwPolicy = Get-ADDefaultDomainPasswordPolicy
-    Write-Host "     • Seuil de verrouillage     : $($pwPolicy.LockoutThreshold) tentatives"
-    Write-Host "     • Durée de verrouillage      : $($pwPolicy.LockoutDuration) minutes"
-    Write-Host "     • Fenêtre d'observation      : $($pwPolicy.LockoutObservationWindow) minutes"
+    Write-Host "     * Seuil de verrouillage     : $($pwPolicy.LockoutThreshold) tentatives"
+    Write-Host "     * Durée de verrouillage      : $($pwPolicy.LockoutDuration) minutes"
+    Write-Host "     * Fenêtre d'observation      : $($pwPolicy.LockoutObservationWindow) minutes"
 } catch {
     Write-Host "     (Impossible de lire la politique de mot de passe)"
 }
-Write-Host "═══════════════════════════════════════════" -ForegroundColor $C['Box']
+Write-Host "-------------------------------------------" -ForegroundColor $C['Box']

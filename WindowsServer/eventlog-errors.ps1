@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Extrait les erreurs des journaux d'événements Windows des dernières 24h.
 .DESCRIPTION

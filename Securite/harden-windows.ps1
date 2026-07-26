@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Applique des configurations de durcissement de sécurité sur Windows.
 .DESCRIPTION
@@ -15,25 +15,25 @@ param([ValidateSet('Basic','Standard','Strict')][string]$Level = 'Standard')
 
 # Vérifier les droits admin
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "❌ Ce script nécessite les droits administrateur." -ForegroundColor Red
+    Write-Host "[ERR] Ce script nécessite les droits administrateur." -ForegroundColor Red
     exit
 }
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "🔐 DURCISSEMENT WINDOWS - Niveau $Level" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "[LOCK] DURCISSEMENT WINDOWS - Niveau $Level" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 
 # 1. Politiques de mot de passe
-Write-Host "`n📌 Politiques de mot de passe..." -ForegroundColor Yellow
+Write-Host "`n[INFO] Politiques de mot de passe..." -ForegroundColor Yellow
 net accounts /minpwlen:8 /maxpwage:60 /minpwage:1 /lockoutthreshold:5 /lockoutduration:30 /lockoutwindow:30
 
 # 2. Désactiver SMBv1
-Write-Host "📌 Désactivation SMBv1..." -ForegroundColor Yellow
+Write-Host "[INFO] Désactivation SMBv1..." -ForegroundColor Yellow
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "SMB1" -Type DWord -Value 0 -Force
 Disable-WindowsOptionalFeature -Online -FeatureName "SMB1Protocol" -NoRestart -ErrorAction SilentlyContinue
 
 # 3. Désactiver LLMNR et NetBIOS
-Write-Host "📌 Désactivation LLMNR/NetBIOS..." -ForegroundColor Yellow
+Write-Host "[INFO] Désactivation LLMNR/NetBIOS..." -ForegroundColor Yellow
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -Type DWord -Value 0 -Force
 
 # 4. Désactiver services inutiles
@@ -62,12 +62,12 @@ foreach ($Svc in $ServicesToDisable) {
     if ($Service -and $Service.StartType -ne 'Disabled') {
         Stop-Service -Name $Svc.Name -Force -ErrorAction SilentlyContinue
         Set-Service -Name $Svc.Name -StartupType Disabled -ErrorAction SilentlyContinue
-        Write-Host "   ✅ Désactivé: $($Svc.Display)" -ForegroundColor Green
+        Write-Host "   [OK] Désactivé: $($Svc.Display)" -ForegroundColor Green
     }
 }
 
 # 5. Renforcer les paramètres de sécurité
-Write-Host "📌 Renforcement registre..." -ForegroundColor Yellow
+Write-Host "[INFO] Renforcement registre..." -ForegroundColor Yellow
 
 # UAC
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Type DWord -Value 1 -Force
@@ -80,4 +80,4 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "Restr
 # Désactiver le stockage de mot de passe en texte clair
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LimitBlankPasswordUse" -Type DWord -Value 1 -Force
 
-Write-Host "`n✅ Durcissement terminé ! Un redémarrage est recommandé." -ForegroundColor Green
+Write-Host "`n[OK] Durcissement terminé ! Un redémarrage est recommandé." -ForegroundColor Green

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Vérifie qui est administrateur local sur une machine locale ou distante.
 .DESCRIPTION
@@ -68,14 +68,14 @@ function Get-LocalAdmins {
 $Admins = Get-LocalAdmins -Computer $ComputerName
 
 if (-not $Admins -or $Admins.Count -eq 0) {
-    Write-Host "❌ Impossible de récupérer la liste des administrateurs sur $ComputerName" -ForegroundColor Red
+    Write-Host "[ERR] Impossible de récupérer la liste des administrateurs sur $ComputerName" -ForegroundColor Red
     Write-Host "   Vérifiez que le service 'Remote Registry' tourne ou utilisez PowerShell en admin" -ForegroundColor Yellow
     exit
 }
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 Write-Host "ADMINISTRATEURS LOCAUX - $ComputerName" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 
 $Admins | ForEach-Object { Write-Host "  $_" }
 

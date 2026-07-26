@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Scan les ports courants sur une ou plusieurs machines.
 .DESCRIPTION

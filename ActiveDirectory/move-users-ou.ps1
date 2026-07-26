@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Déplace des utilisateurs AD d'une OU source vers une OU cible.
 .DESCRIPTION
@@ -98,7 +98,7 @@ $usersToMove = @()
 
 switch ($PSCmdlet.ParameterSetName) {
     'ByOU' {
-        Write-Log "🔍 Recherche des utilisateurs dans : $SourceOU" 'INFO'
+        Write-Log "[SEARCH] Recherche des utilisateurs dans : $SourceOU" 'INFO'
         $splat = @{
             Filter        = if ($UserFilter) { $UserFilter } else { '*' }
             SearchBase    = $SourceOU
@@ -107,23 +107,23 @@ switch ($PSCmdlet.ParameterSetName) {
             ResultPageSize = 500
         }
         $usersToMove = Get-ADUser @splat
-        Write-Log "📂 $($usersToMove.Count) utilisateur(s) trouvé(s) dans l'OU source" 'INFO'
+        Write-Log "[DIR] $($usersToMove.Count) utilisateur(s) trouvé(s) dans l'OU source" 'INFO'
     }
     'ByList' {
-        Write-Log "📄 Lecture de la liste depuis : $UserList" 'INFO'
+        Write-Log "[FILE] Lecture de la liste depuis : $UserList" 'INFO'
         $logins = Get-Content -Path $UserList | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -notmatch '^#' }
         foreach ($login in $logins) {
             try {
                 $user = Get-ADUser -Identity $login -Properties DisplayName, SamAccountName, Mail, Department, Title, DistinguishedName -ErrorAction Stop
                 $usersToMove += $user
             } catch {
-                Write-Log "⚠️  Utilisateur '$login' introuvable dans AD" 'WARN'
+                Write-Log "[WARN]  Utilisateur '$login' introuvable dans AD" 'WARN'
             }
         }
-        Write-Log "📂 $($usersToMove.Count) utilisateur(s) chargé(s) depuis la liste" 'INFO'
+        Write-Log "[DIR] $($usersToMove.Count) utilisateur(s) chargé(s) depuis la liste" 'INFO'
     }
     'ByCSV' {
-        Write-Log "📄 Lecture du CSV depuis : $CsvPath" 'INFO'
+        Write-Log "[FILE] Lecture du CSV depuis : $CsvPath" 'INFO'
         $csvUsers = Import-Csv -Path $CsvPath -Encoding UTF8
 
         # Déterminer la colonne contenant le login
@@ -138,7 +138,7 @@ switch ($PSCmdlet.ParameterSetName) {
         }
 
         if (-not $loginCol) {
-            Write-Log "❌ Colonne 'SamAccountName' ou 'Login' introuvable dans le CSV" 'ERR'
+            Write-Log "[ERR] Colonne 'SamAccountName' ou 'Login' introuvable dans le CSV" 'ERR'
             exit 1
         }
 
@@ -148,16 +148,16 @@ switch ($PSCmdlet.ParameterSetName) {
                 $user = Get-ADUser -Identity $login -Properties DisplayName, SamAccountName, Mail, Department, Title, DistinguishedName -ErrorAction Stop
                 $usersToMove += $user
             } catch {
-                Write-Log "⚠️  Utilisateur '$login' introuvable dans AD" 'WARN'
+                Write-Log "[WARN]  Utilisateur '$login' introuvable dans AD" 'WARN'
             }
         }
-        Write-Log "📂 $($usersToMove.Count) utilisateur(s) chargé(s) depuis le CSV" 'INFO'
+        Write-Log "[DIR] $($usersToMove.Count) utilisateur(s) chargé(s) depuis le CSV" 'INFO'
     }
 }
 
 # ---- Vérification ----
 if ($usersToMove.Count -eq 0) {
-    Write-Log "❌ Aucun utilisateur à déplacer." 'ERR'
+    Write-Log "[ERR] Aucun utilisateur à déplacer." 'ERR'
     exit 0
 }
 
@@ -172,7 +172,7 @@ foreach ($u in $usersToMove) {
 $usersToMove = $usersToMove | Where-Object { $_ -notin $alreadyThere }
 
 if ($alreadyThere.Count -gt 0) {
-    Write-Log "⏭️  $($alreadyThere.Count) utilisateur(s) déjà dans l'OU cible (ignorés)" 'WARN'
+    Write-Log "[SKIP]  $($alreadyThere.Count) utilisateur(s) déjà dans l'OU cible (ignorés)" 'WARN'
 }
 
 # ---- Afficher les utilisateurs à déplacer ----
@@ -185,16 +185,16 @@ $displayData = $usersToMove | Select-Object @{N='Nom';E={$_.DisplayName}},
                                                 $dn.Substring($dn.IndexOf(',') + 1)
                                              }}
 
-Write-Host "`n📋 Utilisateurs à déplacer vers : $TargetOU" -ForegroundColor Cyan
+Write-Host "`n[CLIP] Utilisateurs à déplacer vers : $TargetOU" -ForegroundColor Cyan
 $displayData | Format-Table -AutoSize -Property Nom, Login, Email, Service
 
 Write-Host "  Total : $($usersToMove.Count) utilisateur(s)" -ForegroundColor Cyan
 
 # ---- Confirmation ----
 if (-not $WhatIf) {
-    $confirm = Read-Host "`n🚚 Confirmer le déplacement de ces $($usersToMove.Count) utilisateurs ? (O/N)"
+    $confirm = Read-Host "`n[MOVE] Confirmer le déplacement de ces $($usersToMove.Count) utilisateurs ? (O/N)"
     if ($confirm -notin @('O','o','Oui','oui','Y','y','Yes','yes')) {
-        Write-Log "⏹️  Déplacement annulé par l'utilisateur." 'WARN'
+        Write-Log "[STOP]  Déplacement annulé par l'utilisateur." 'WARN'
         exit 0
     }
 }
@@ -211,14 +211,14 @@ foreach ($u in $usersToMove) {
 
     if ($PSCmdlet.ShouldProcess($login, "Déplacer vers $TargetOU")) {
         if ($WhatIf) {
-            Write-Log "🔍 [SIMULATION] Déplacement de $login ($name) vers $TargetOU" 'INFO'
+            Write-Log "[SEARCH] [SIMULATION] Déplacement de $login ($name) vers $TargetOU" 'INFO'
             $moved++
             continue
         }
 
         try {
             Move-ADObject -Identity $sourceDN -TargetPath $TargetOU -ErrorAction Stop
-            Write-Log "✅ $login ($name) déplacé vers $TargetOU" 'OK'
+            Write-Log "[OK] $login ($name) déplacé vers $TargetOU" 'OK'
             $moved++
 
             $logEntries += [PSCustomObject]@{
@@ -231,7 +231,7 @@ foreach ($u in $usersToMove) {
                 Statut    = 'Déplacé'
             }
         } catch {
-            Write-Log "❌ Échec déplacement $login ($name) : $_" 'ERR'
+            Write-Log "[ERR] Échec déplacement $login ($name) : $_" 'ERR'
             $errors++
             $logEntries += [PSCustomObject]@{
                 Login     = $login
@@ -250,13 +250,13 @@ foreach ($u in $usersToMove) {
 if ($CreateLogFile -and $logEntries.Count -gt 0) {
     $reportPath = "move-users-report_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
     $logEntries | Export-Csv -Path $reportPath -NoTypeInformation -Encoding UTF8
-    Write-Log "📄 Rapport détaillé : $reportPath" 'OK'
+    Write-Log "[FILE] Rapport détaillé : $reportPath" 'OK'
 }
 
 # ---- Résumé final ----
-Write-Host "`n═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "`n-------------------------------------------" -ForegroundColor Cyan
 Write-Host "  RÉSULTAT DÉPLACEMENT" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------" -ForegroundColor Cyan
 Write-Host "  Source   : $SourceOU" -ForegroundColor Gray
 Write-Host "  Cible    : $TargetOU" -ForegroundColor Gray
 Write-Host "  Déplacés : $moved" -ForegroundColor Green
@@ -264,4 +264,4 @@ Write-Host "  Erreurs  : $errors" -ForegroundColor Red
 if ($WhatIf) {
     Write-Host "  [MODE SIMULATION - aucun déplacement réel]" -ForegroundColor Yellow
 }
-Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------" -ForegroundColor Cyan

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Audit complet de l'Active Directory : utilisateurs, groupes, ordinateurs et OU.
 .DESCRIPTION
@@ -71,19 +71,19 @@ if (-not (Test-Path $OutputDir)) {
 $startTime = Get-Date
 $auditLog  = Join-Path $OutputDir "audit-summary.log"
 
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------------------" -ForegroundColor Cyan
 Write-Host "  AUDIT ACTIVE DIRECTORY - $domainName" -ForegroundColor Cyan
 Write-Host "  Démarré le : $($startTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
 Write-Host "  Domaine    : $domainDN" -ForegroundColor Cyan
 Write-Host "  Base       : $rootOU" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------------------" -ForegroundColor Cyan
 
 $summary = [ordered]@{}
 
 # ============================================================
 #  1. AUDIT DES UTILISATEURS
 # ============================================================
-Write-Host "`n👤 1/4 — Audit des utilisateurs..." -ForegroundColor Yellow
+Write-Host "`n[USER] 1/4 - Audit des utilisateurs..." -ForegroundColor Yellow
 
 $userSplat = @{
     Properties = @('DisplayName', 'SamAccountName', 'Mail', 'Enabled', 'LockedOut',
@@ -149,13 +149,13 @@ $summary['   Inactifs 90j+']     = ($usersReport | Where-Object Inactif90j -eq '
 $summary['   Avec email']        = ($usersReport | Where-Object { $_.Email }).Count
 $summary['   Sans email']        = ($usersReport | Where-Object { -not $_.Email }).Count
 
-Write-Host "   ✅ $($allUsers.Count) utilisateurs exportés" -ForegroundColor Green
+Write-Host "   [OK] $($allUsers.Count) utilisateurs exportés" -ForegroundColor Green
 
 # ============================================================
 #  2. AUDIT DES GROUPES
 # ============================================================
 if ($IncludeGroups) {
-    Write-Host "`n👥 2/4 — Audit des groupes..." -ForegroundColor Yellow
+    Write-Host "`n[GROUP] 2/4 - Audit des groupes..." -ForegroundColor Yellow
 
     $groupSplat = @{
         Properties = @('Name', 'SamAccountName', 'GroupCategory', 'GroupScope',
@@ -212,14 +212,14 @@ if ($IncludeGroups) {
     $summary['   Domaine Local']  = ($groupsReport | Where-Object Portee -eq 'Domaine Local').Count
     $summary['   Vides (0 membre)'] = ($groupsReport | Where-Object NbMembres -eq 0).Count
 
-    Write-Host "   ✅ $($allGroups.Count) groupes exportés" -ForegroundColor Green
+    Write-Host "   [OK] $($allGroups.Count) groupes exportés" -ForegroundColor Green
 }
 
 # ============================================================
 #  3. AUDIT DES ORDINATEURS
 # ============================================================
 if ($IncludeComputers) {
-    Write-Host "`n💻 3/4 — Audit des ordinateurs..." -ForegroundColor Yellow
+    Write-Host "`n[PC] 3/4 - Audit des ordinateurs..." -ForegroundColor Yellow
 
     $compSplat = @{
         Properties = @('Name', 'SamAccountName', 'OperatingSystem', 'OperatingSystemVersion',
@@ -279,14 +279,14 @@ if ($IncludeComputers) {
         }
     }
 
-    Write-Host "   ✅ $($allComputers.Count) ordinateurs exportés" -ForegroundColor Green
+    Write-Host "   [OK] $($allComputers.Count) ordinateurs exportés" -ForegroundColor Green
 }
 
 # ============================================================
 #  4. AUDIT DES UNITÉS D'ORGANISATION
 # ============================================================
 if ($IncludeOUS) {
-    Write-Host "`n📁 4/4 — Audit des Unités d'Organisation..." -ForegroundColor Yellow
+    Write-Host "`n[FILE] 4/4 - Audit des Unités d'Organisation..." -ForegroundColor Yellow
 
     function Get-OUTree {
         param([string]$DN, [int]$Depth = 0, [string]$ParentDN = '')
@@ -301,7 +301,7 @@ if ($IncludeOUS) {
             $childOUs       = (Get-ADOrganizationalUnit -Filter * -SearchBase $ou.DistinguishedName -SearchScope OneLevel -ErrorAction SilentlyContinue).Count
 
             $indent = '  ' * $Depth
-            $prefix = if ($Depth -eq 0) { '📁' } else { '📂' }
+            $prefix = if ($Depth -eq 0) { '[FILE]' } else { '[DIR]' }
 
             [PSCustomObject]@{
                 Niveau          = $Depth
@@ -330,7 +330,7 @@ if ($IncludeOUS) {
     $summary['   Racines (niveau 1)']   = ($ouReport | Where-Object Niveau -eq 1).Count
     $summary['   Profondeur max']       = ($ouReport | Measure-Object Niveau -Maximum).Maximum
 
-    Write-Host "   ✅ $($ouReport.Count) OU exportées (arborescence complète)" -ForegroundColor Green
+    Write-Host "   [OK] $($ouReport.Count) OU exportées (arborescence complète)" -ForegroundColor Green
 }
 
 # ============================================================
@@ -339,9 +339,9 @@ if ($IncludeOUS) {
 $endTime = Get-Date
 $duration = ($endTime - $startTime).TotalSeconds
 
-Write-Host "`n═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  RÉSUMÉ D'AUDIT — $domainName" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "`n-------------------------------------------------------" -ForegroundColor Cyan
+Write-Host "  RÉSUMÉ D'AUDIT - $domainName" -ForegroundColor Cyan
+Write-Host "-------------------------------------------------------" -ForegroundColor Cyan
 
 foreach ($key in $summary.Keys) {
     $val = $summary[$key]
@@ -357,22 +357,22 @@ foreach ($key in $summary.Keys) {
 }
 Write-Host "`n  Durée    : $([math]::Round($duration, 1)) secondes" -ForegroundColor Gray
 Write-Host "  Dossier  : $OutputDir" -ForegroundColor Gray
-Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------------------" -ForegroundColor Cyan
 
 # Enregistrer le résumé dans le log
 @"
-═══════════════════════════════════════════
+-------------------------------------------
 AUDIT AD - $domainName
 Date : $($startTime.ToString('yyyy-MM-dd HH:mm:ss'))
 Durée : $([math]::Round($duration, 1))s
-═══════════════════════════════════════════
+-------------------------------------------
 $($summary.GetEnumerator() | ForEach-Object { "$($_.Key): $($_.Value)" } | Out-String)
 Fichiers dans : $OutputDir
-═══════════════════════════════════════════
+-------------------------------------------
 "@ | Out-File -FilePath $auditLog -Encoding UTF8
 
-Write-Host "`n📄 Fichiers générés dans : $OutputDir" -ForegroundColor Yellow
-Get-ChildItem $OutputDir | ForEach-Object { Write-Host "   📄 $($_.Name) ($([math]::Round($_.Length/1KB, 1)) KB)" -ForegroundColor Gray }
+Write-Host "`n[FILE] Fichiers générés dans : $OutputDir" -ForegroundColor Yellow
+Get-ChildItem $OutputDir | ForEach-Object { Write-Host "   [FILE] $($_.Name) ($([math]::Round($_.Length/1KB, 1)) KB)" -ForegroundColor Gray }
 
 if ($PassThru) {
     return @{

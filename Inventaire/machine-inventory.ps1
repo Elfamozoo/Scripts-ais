@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Inventaire complet d'une machine (CPU, RAM, disques, OS, IP, MAC).
 .DESCRIPTION
@@ -47,17 +47,17 @@ try {
         UptimeJours = [math]::Round(((Get-Date) - $OS.LastBootUpTime).TotalDays, 1)
     }
 
-    Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-    Write-Host "💻 INVENTAIRE - $ComputerName" -ForegroundColor Cyan
-    Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "[PC] INVENTAIRE - $ComputerName" -ForegroundColor Cyan
+    Write-Host "---------------------------------------------------" -ForegroundColor Cyan
     $Inventory | Format-List
 
     # Export
     $ExportPath = "inventory_$ComputerName`_$(Get-Date -Format 'yyyyMMdd-HHmmss').csv"
     $Inventory | Export-Csv -Path $ExportPath -NoTypeInformation -Encoding UTF8
-    Write-Host "📁 Export: $ExportPath" -ForegroundColor Green
+    Write-Host "[FILE] Export: $ExportPath" -ForegroundColor Green
 
 } catch {
-    Write-Host "❌ Erreur de connexion à $ComputerName" -ForegroundColor Red
+    Write-Host "[ERR] Erreur de connexion à $ComputerName" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
 }

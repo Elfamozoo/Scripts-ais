@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Liste tous les logiciels installés sur une machine locale ou distante.
 .DESCRIPTION
@@ -34,16 +34,16 @@ if (-not $Software) {
         Sort-Object Nom
 }
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "📦 LOGICIELS INSTALLÉS - $ComputerName" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "[PACKAGE] LOGICIELS INSTALLÉS - $ComputerName" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 
 $Software | Format-Table -AutoSize Nom, Version, Fabricant
 
-Write-Host "`n📊 Total: $($Software.Count) logiciels installés" -ForegroundColor Cyan
+Write-Host "`n[STATS] Total: $($Software.Count) logiciels installés" -ForegroundColor Cyan
 
 if ($ExportCSV) {
     $ExportPath = "software_$ComputerName`_$(Get-Date -Format 'yyyyMMdd-HHmmss').csv"
     $Software | Export-Csv -Path $ExportPath -NoTypeInformation -Encoding UTF8
-    Write-Host "📁 Export: $ExportPath" -ForegroundColor Green
+    Write-Host "[FILE] Export: $ExportPath" -ForegroundColor Green
 }

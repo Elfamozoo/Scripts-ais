@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Liste l'historique des périphériques USB branchés sur la machine.
 .DESCRIPTION
@@ -21,7 +21,7 @@ if (-not $Events) {
 }
 
 if (-not $Events) {
-    Write-Host "⚠️ Aucun historique USB trouvé (pas de logs ou pas de périphériques récents)" -ForegroundColor Yellow
+    Write-Host "[WARN] Aucun historique USB trouvé (pas de logs ou pas de périphériques récents)" -ForegroundColor Yellow
     exit
 }
 
@@ -30,17 +30,17 @@ $USBDevices = $Events | Select-Object TimeCreated,
     @{N='Description';E={$_.Properties[1].Value}} |
     Sort-Object TimeCreated -Descending
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "🔌 HISTORIQUE DES PÉRIPHÉRIQUES USB ($Days jours)" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "[PLUG] HISTORIQUE DES PÉRIPHÉRIQUES USB ($Days jours)" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 
 $USBDevices | ForEach-Object {
     Write-Host "$($_.TimeCreated.ToString('dd/MM/yyyy HH:mm')) | $($_.Périphérique) - $($_.Description)"
 }
 
-Write-Host "`n📊 Total: $($USBDevices.Count) connexions USB détectées" -ForegroundColor Cyan
+Write-Host "`n[STATS] Total: $($USBDevices.Count) connexions USB détectées" -ForegroundColor Cyan
 
 # Export CSV
 $ExportPath = "usb-history_$(Get-Date -Format 'yyyyMMdd-HHmmss').csv"
 $USBDevices | Export-Csv -Path $ExportPath -NoTypeInformation -Encoding UTF8
-Write-Host "📁 Export: $ExportPath" -ForegroundColor Green
+Write-Host "[FILE] Export: $ExportPath" -ForegroundColor Green

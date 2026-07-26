@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Traceroute automatisé vers une destination avec export des résultats.
 .DESCRIPTION
@@ -17,7 +17,7 @@
 .PARAMETER ExportFormat
     Format d'export (CSV, JSON, TXT) (défaut: CSV)
 .PARAMETER Continuous
-    Mode continu — répète le traceroute toutes les N secondes (optionnel)
+    Mode continu - répète le traceroute toutes les N secondes (optionnel)
 .EXAMPLE
     .\traceroute-automated.ps1 -Target "google.com"
     .\traceroute-automated.ps1 -Target "8.8.8.8" -ExportPath "trace.csv" -ExportFormat CSV
@@ -132,9 +132,9 @@ function Do-Traceroute {
 
 do {
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Write-Host "── $timestamp ───────────────────────────────" -ForegroundColor Yellow
+    Write-Host "-- $timestamp -------------------------------" -ForegroundColor Yellow
     Write-Host " Saut   Adresse         T1         T2         T3         Hostname" -ForegroundColor Cyan
-    Write-Host " ─────────────────────────────────────────────────────────────────" -ForegroundColor Cyan
+    Write-Host " -----------------------------------------------------------------" -ForegroundColor Cyan
 
     $results, $reached = Do-Traceroute -DestIP $destinationIP -MaxH $MaxHops -TO $Timeout -Resolve $ResolveNames
 
@@ -142,9 +142,9 @@ do {
 
     Write-Host ""
     if ($reached) {
-        Write-Host "✓ Destination atteinte en $totalHops sauts" -ForegroundColor Green
+        Write-Host "[OK] Destination atteinte en $totalHops sauts" -ForegroundColor Green
     } else {
-        Write-Host "✗ Destination non atteinte après $MaxHops sauts" -ForegroundColor Red
+        Write-Host "[ERR] Destination non atteinte après $MaxHops sauts" -ForegroundColor Red
     }
     Write-Host ""
 

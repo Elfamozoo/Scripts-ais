@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     État des mises à jour Windows installées et en attente.
 .DESCRIPTION
@@ -261,7 +261,7 @@ if ($rebootHistory -and ($rebootHistory | Measure-Object).Count -gt 0) {
     }
     $htmlBody += "</table>"
     if ($crashCount -gt 0) {
-        $htmlBody += "<p style='color:red;'><strong>⚠️ $crashCount arrêt(s) inattendu(s) détecté(s) !</strong></p>"
+        $htmlBody += "<p style='color:red;'><strong>[WARN] $crashCount arrêt(s) inattendu(s) détecté(s) !</strong></p>"
     }
 }
 

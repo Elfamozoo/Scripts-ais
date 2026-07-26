@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Liste les utilisateurs Active Directory avec nom, email, groupe principal et état.
 .DESCRIPTION
@@ -52,7 +52,7 @@ $splat = @{
 if ($SearchBase) { $splat.SearchBase = $SearchBase }
 
 # ---- Récupération ----
-Write-Host "🔍 Récupération des utilisateurs AD..." -ForegroundColor Cyan
+Write-Host "[SEARCH] Récupération des utilisateurs AD..." -ForegroundColor Cyan
 $users = Get-ADUser -Filter * @splat
 
 # ---- Filtre optionnel ----
@@ -86,13 +86,13 @@ $results = $users | ForEach-Object {
 }
 
 # ---- Affichage ----
-Write-Host "`n📋 Utilisateurs AD ($($results.Count) trouvés) :" -ForegroundColor Green
+Write-Host "`n[CLIP] Utilisateurs AD ($($results.Count) trouvés) :" -ForegroundColor Green
 $results | Format-Table -AutoSize -Property Nom, Login, Email, Groupe, Etat, DerniereConnexion
 
 # ---- Export CSV ----
 if ($OutputPath) {
     $results | Export-Csv -Path $OutputPath -NoTypeInformation -Encoding UTF8
-    Write-Host "✅ Exporté vers : $OutputPath" -ForegroundColor Yellow
+    Write-Host "[OK] Exporté vers : $OutputPath" -ForegroundColor Yellow
 }
 
 # ---- Résumé ----
@@ -103,7 +103,7 @@ $stats = @{
     SansEmail = ($results | Where-Object { -not $_.Email }).Count
 }
 
-Write-Host "`n📊 Résumé :" -ForegroundColor Cyan
+Write-Host "`n[STATS] Résumé :" -ForegroundColor Cyan
 Write-Host "  Actifs       : $($stats.Actifs)"
 Write-Host "  Désactivés   : $($stats.Inactifs)"
 Write-Host "  Avec email   : $($stats.AvecEmail)"

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Crée des utilisateurs Active Directory en masse depuis un fichier CSV.
 .DESCRIPTION
@@ -66,7 +66,7 @@ if (-not (Test-Path $CsvPath)) {
 }
 
 $users = Import-Csv -Path $CsvPath -Encoding UTF8
-&$log "📄 $($users.Count) utilisateurs chargés depuis $CsvPath" 'INFO'
+&$log "[FILE] $($users.Count) utilisateurs chargés depuis $CsvPath" 'INFO'
 
 # ---- Validation des colonnes ----
 $required = @('FirstName', 'LastName', 'SamAccountName')
@@ -94,7 +94,7 @@ foreach ($u in $users) {
     try {
         $existing = Get-ADUser -Filter "SamAccountName -eq '$sam'" -ErrorAction Stop
         if ($existing) {
-            &$log "⏭️  $sam existe déjà (DN: $($existing.DistinguishedName))" 'WARN'
+            &$log "[SKIP]  $sam existe déjà (DN: $($existing.DistinguishedName))" 'WARN'
             $stats.Existe++
             continue
         }
@@ -133,20 +133,20 @@ foreach ($u in $users) {
             $mgr = Get-ADUser -Filter "SamAccountName -eq '$($u.Manager.Trim())'" -ErrorAction Stop
             $params.Manager = $mgr.DistinguishedName
         } catch {
-            &$log "⚠️  Manager '$($u.Manager)' introuvable pour $sam" 'WARN'
+            &$log "[WARN]  Manager '$($u.Manager)' introuvable pour $sam" 'WARN'
         }
     }
 
     # WhatIf ou création réelle
     if ($WhatIf) {
-        &$log "🔍 [SIMULATION] Création de $sam ($displayName) dans $ou" 'INFO'
+        &$log "[SEARCH] [SIMULATION] Création de $sam ($displayName) dans $ou" 'INFO'
         $stats.Cree++
         continue
     }
 
     try {
         $newUser = New-ADUser @params
-        &$log "✅ $sam ($displayName) créé avec succès" 'OK'
+        &$log "[OK] $sam ($displayName) créé avec succès" 'OK'
         $stats.Cree++
 
         # Ajout aux groupes (colonne Groupes = nom séparé par point-virgule)
@@ -155,24 +155,24 @@ foreach ($u in $users) {
             foreach ($g in $groupes) {
                 try {
                     Add-ADGroupMember -Identity $g -Members $sam -ErrorAction Stop
-                    &$log "   ➕ $sam ajouté au groupe $g" 'OK'
+                    &$log "   [+] $sam ajouté au groupe $g" 'OK'
                 } catch {
-                    &$log "   ⚠️  Échec ajout groupe $g pour $sam : $_" 'WARN'
+                    &$log "   [WARN]  Échec ajout groupe $g pour $sam : $_" 'WARN'
                 }
             }
         }
     } catch {
-        &$log "❌ Échec création $sam : $_" 'ERR'
+        &$log "[ERR] Échec création $sam : $_" 'ERR'
         $stats.Erreur++
     }
 }
 
 # ---- Résumé final ----
-Write-Host "`n═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "`n-------------------------------------------" -ForegroundColor Cyan
 Write-Host "  RÉSULTAT DE L'IMPORT EN MASSE" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------" -ForegroundColor Cyan
 Write-Host "  Créés      : $($stats.Cree)"
 Write-Host "  Déjà existants : $($stats.Existe)"
 Write-Host "  Erreurs    : $($stats.Erreur)"
 if ($WhatIf) { Write-Host "  [MODE SIMULATION - aucune modification réelle]" -ForegroundColor Yellow }
-Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------" -ForegroundColor Cyan

@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Vérifie l'uptime des serveurs (local ou liste depuis un fichier).
 .DESCRIPTION
@@ -39,28 +39,28 @@ $Results = foreach ($Computer in $ComputerName) {
                 UptimeFormate = "$($Uptime.Days)j $($Uptime.Hours)h $($Uptime.Minutes)m"
                 Demarrage = $OS.LastBootUpTime
                 OS = $OS.Caption
-                Status = if ($RebootPending -or $Days -gt 30) { "⚠️ Redémarrage recommandé" } else { "✅ OK" }
+                Status = if ($RebootPending -or $Days -gt 30) { "[WARN] Redémarrage recommandé" } else { "[OK] OK" }
             }
         }
     } catch {
         [PSCustomObject]@{
             Serveur = $Computer
             UptimeJours = $null
-            UptimeFormate = "❌ INJOIGNABLE"
+            UptimeFormate = "[ERR] INJOIGNABLE"
             Demarrage = $null
             OS = $null
-            Status = "❌ Erreur de connexion"
+            Status = "[ERR] Erreur de connexion"
         }
     }
 }
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "⏱️ RAPPORT UPTIME DES SERVEURS" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "[TIMER] RAPPORT UPTIME DES SERVEURS" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 
 $Results | ForEach-Object {
     $Color = if ($_.UptimeJours -gt 30 -or $_.Status -like "*Redémarrage*") { "Yellow" } elseif ($_.Status -like "*Erreur*") { "Red" } else { "Green" }
     Write-Host "$($_.Serveur.PadRight(20)) | $($_.UptimeFormate.PadRight(20)) | $($_.Status)" -ForegroundColor $Color
 }
 
-Write-Host "`n📊 $($Results.Count) serveurs interrogés" -ForegroundColor Cyan
+Write-Host "`n[STATS] $($Results.Count) serveurs interrogés" -ForegroundColor Cyan

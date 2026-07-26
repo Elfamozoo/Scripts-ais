@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Rapport d'espace disque via WMI (local et serveurs distants).
 .DESCRIPTION
@@ -174,7 +174,7 @@ $htmlHeader = @"
 "@
 
 $summaryClass = if ($totalAlerts -eq 0) { "alert-green" } else { "alert-red" }
-$summaryText = if ($totalAlerts -eq 0) { "✅ Aucun problème d'espace disque détecté." } else { "⚠️ $totalAlerts volume(s) en alerte sur $totalDisks volume(s) !" }
+$summaryText = if ($totalAlerts -eq 0) { "[OK] Aucun problème d'espace disque détecté." } else { "[WARN] $totalAlerts volume(s) en alerte sur $totalDisks volume(s) !" }
 
 $htmlBody = @"
     <div class="summary-box $summaryClass">

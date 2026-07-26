@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Sauvegarde des configurations DHCP, DNS et IIS vers un dossier d'archive.
 .DESCRIPTION

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Réinitialisation complète de la pile réseau Windows.
 .DESCRIPTION
@@ -67,13 +67,13 @@ function Show-Banner {
     Clear-Host
     Write-Host @"
 
-╔══════════════════════════════════════════════════════╗
-║         RÉINITIALISATION RÉSEAU WINDOWS              ║
-║         network-reset.ps1                            ║
-╚══════════════════════════════════════════════════════╝
++--------------------------------------------------------+
+|         RÉINITIALISATION RÉSEAU WINDOWS              |
+|         network-reset.ps1                            |
++--------------------------------------------------------+
 
 "@ -ForegroundColor Cyan
-    Write-Host "Privilèges : Administrateur [✓]" -ForegroundColor Green
+    Write-Host "Privilèges : Administrateur [[OK]]" -ForegroundColor Green
     Write-Host ""
 
     $checks = @()
@@ -87,7 +87,7 @@ function Show-Banner {
     if ($RestartAdapter){ $checks += "Redémarrage adaptateur" }
 
     Write-Host "Opérations planifiées :" -ForegroundColor Yellow
-    $checks | ForEach-Object { Write-Host "  • $_" -ForegroundColor White }
+    $checks | ForEach-Object { Write-Host "  * $_" -ForegroundColor White }
     Write-Host ""
 }
 
@@ -96,14 +96,14 @@ function Do-WinsockReset {
     try {
         $result = netsh winsock reset
         if ($LASTEXITCODE -eq 0) {
-            Write-Log "  ✓ Winsock réinitialisé avec succès" "Green"
+            Write-Log "  [OK] Winsock réinitialisé avec succès" "Green"
             return $true
         } else {
-            Write-Log "  ✗ Erreur lors de la réinitialisation Winsock" "Red"
+            Write-Log "  [ERR] Erreur lors de la réinitialisation Winsock" "Red"
             return $false
         }
     } catch {
-        Write-Log "  ✗ Exception: $_" "Red"
+        Write-Log "  [ERR] Exception: $_" "Red"
         return $false
     }
 }
@@ -113,17 +113,17 @@ function Do-DNSReset {
     try {
         $result = ipconfig /flushdns
         if ($LASTEXITCODE -eq 0) {
-            Write-Log "  ✓ Cache DNS vidé avec succès" "Green"
+            Write-Log "  [OK] Cache DNS vidé avec succès" "Green"
             # Vider le cache DNS du client aussi
             Clear-DnsClientCache -ErrorAction SilentlyContinue
-            Write-Log "  ✓ Cache DNS Client vidé" "Green"
+            Write-Log "  [OK] Cache DNS Client vidé" "Green"
             return $true
         } else {
-            Write-Log "  ✗ Erreur lors du vidage du cache DNS" "Red"
+            Write-Log "  [ERR] Erreur lors du vidage du cache DNS" "Red"
             return $false
         }
     } catch {
-        Write-Log "  ✗ Exception: $_" "Red"
+        Write-Log "  [ERR] Exception: $_" "Red"
         return $false
     }
 }
@@ -143,15 +143,15 @@ function Do-IPReset {
             Write-Log "  Exécution: $cmd" "Gray"
             $result = cmd /c "$cmd 2>&1"
             if ($LASTEXITCODE -ne 0) {
-                Write-Log "  ⚠ Avertissement pour: $cmd" "Yellow"
+                Write-Log "  [WARN] Avertissement pour: $cmd" "Yellow"
                 $success = $false
             }
         }
         if ($success) {
-            Write-Log "  ✓ Pile TCP/IP réinitialisée" "Green"
+            Write-Log "  [OK] Pile TCP/IP réinitialisée" "Green"
         }
     } catch {
-        Write-Log "  ✗ Exception: $_" "Red"
+        Write-Log "  [ERR] Exception: $_" "Red"
         $success = $false
     }
     return $success
@@ -163,9 +163,9 @@ function Do-ReleaseRenew {
 
     try {
         $result = ipconfig /release
-        Write-Log "  ✓ ipconfig /release exécuté" "Green"
+        Write-Log "  [OK] ipconfig /release exécuté" "Green"
     } catch {
-        Write-Log "  ⚠ Erreur ipconfig /release" "Yellow"
+        Write-Log "  [WARN] Erreur ipconfig /release" "Yellow"
         $success = $false
     }
 
@@ -173,9 +173,9 @@ function Do-ReleaseRenew {
 
     try {
         $result = ipconfig /renew
-        Write-Log "  ✓ ipconfig /renew exécuté" "Green"
+        Write-Log "  [OK] ipconfig /renew exécuté" "Green"
     } catch {
-        Write-Log "  ⚠ Erreur ipconfig /renew" "Yellow"
+        Write-Log "  [WARN] Erreur ipconfig /renew" "Yellow"
         $success = $false
     }
 
@@ -194,18 +194,18 @@ function Do-FirewallReset {
         # Réinitialisation
         $result = netsh advfirewall reset
         if ($LASTEXITCODE -eq 0) {
-            Write-Log "  ✓ Pare-feu réinitialisé aux valeurs par défaut" "Green"
-            Write-Log "  ⚠ Sauvegarde disponible: $backupFile" "Yellow"
+            Write-Log "  [OK] Pare-feu réinitialisé aux valeurs par défaut" "Green"
+            Write-Log "  [WARN] Sauvegarde disponible: $backupFile" "Yellow"
 
             # Activer le pare-feu pour tous les profils
             netsh advfirewall set allprofiles state on 2>$null
-            Write-Log "  ✓ Pare-feu activé pour tous les profils" "Green"
+            Write-Log "  [OK] Pare-feu activé pour tous les profils" "Green"
         } else {
-            Write-Log "  ✗ Erreur lors de la réinitialisation du pare-feu" "Red"
+            Write-Log "  [ERR] Erreur lors de la réinitialisation du pare-feu" "Red"
             $success = $false
         }
     } catch {
-        Write-Log "  ✗ Exception: $_" "Red"
+        Write-Log "  [ERR] Exception: $_" "Red"
         $success = $false
     }
     return $success
@@ -216,14 +216,14 @@ function Do-FlushARP {
     try {
         $result = netsh interface ip delete arpcache
         if ($LASTEXITCODE -eq 0) {
-            Write-Log "  ✓ Cache ARP vidé avec succès" "Green"
+            Write-Log "  [OK] Cache ARP vidé avec succès" "Green"
             return $true
         } else {
-            Write-Log "  ✗ Erreur lors du vidage du cache ARP" "Red"
+            Write-Log "  [ERR] Erreur lors du vidage du cache ARP" "Red"
             return $false
         }
     } catch {
-        Write-Log "  ✗ Exception: $_" "Red"
+        Write-Log "  [ERR] Exception: $_" "Red"
         return $false
     }
 }
@@ -232,12 +232,12 @@ function Do-NBTReset {
     Write-Log "Réinitialisation de NetBIOS..." "Cyan"
     try {
         $result = nbtstat -R
-        Write-Log "  ✓ Cache NetBIOS vidé (nbtstat -R)" "Green"
+        Write-Log "  [OK] Cache NetBIOS vidé (nbtstat -R)" "Green"
         $result = nbtstat -RR
-        Write-Log "  ✓ Noms NetBIOS relâchés/renouvelés (nbtstat -RR)" "Green"
+        Write-Log "  [OK] Noms NetBIOS relâchés/renouvelés (nbtstat -RR)" "Green"
         return $true
     } catch {
-        Write-Log "  ✗ Erreur: $_" "Red"
+        Write-Log "  [ERR] Erreur: $_" "Red"
         return $false
     }
 }
@@ -253,7 +253,7 @@ function Do-AdapterRestart {
     }
 
     if (-not $adapters) {
-        Write-Log "  ⚠ Aucun adaptateur trouvé à redémarrer" "Yellow"
+        Write-Log "  [WARN] Aucun adaptateur trouvé à redémarrer" "Yellow"
         return $false
     }
 
@@ -261,10 +261,10 @@ function Do-AdapterRestart {
         try {
             Write-Log "  Redémarrage de: $($adapter.Name)..." "Gray"
             Restart-NetAdapter -Name $adapter.Name -Confirm:$false
-            Write-Log "  ✓ $($adapter.Name) redémarré" "Green"
+            Write-Log "  [OK] $($adapter.Name) redémarré" "Green"
             Start-Sleep -Seconds 3
         } catch {
-            Write-Log "  ✗ Erreur pour $($adapter.Name): $_" "Red"
+            Write-Log "  [ERR] Erreur pour $($adapter.Name): $_" "Red"
             $success = $false
         }
     }
@@ -275,28 +275,28 @@ function Show-Summary {
     param($Results)
 
     Write-Host ""
-    Write-Log "═══════════════════════════════════════════" "Cyan"
+    Write-Log "-------------------------------------------" "Cyan"
     Write-Log "         RÉSUMÉ DES OPÉRATIONS" "Cyan"
-    Write-Log "═══════════════════════════════════════════" "Cyan"
+    Write-Log "-------------------------------------------" "Cyan"
 
     $successCount = ($Results.Values | Where-Object { $_ -eq $true }).Count
     $failCount    = ($Results.Values | Where-Object { $_ -eq $false }).Count
 
     foreach ($op in $Results.Keys) {
-        $status = if ($Results[$op]) { "✓" } else { "✗" }
+        $status = if ($Results[$op]) { "[OK]" } else { "[ERR]" }
         $color  = if ($Results[$op]) { "Green" } else { "Red" }
         Write-Log "  $status $op" $color
     }
 
     Write-Host ""
     if ($failCount -eq 0) {
-        Write-Log "✅ Toutes les opérations ont réussi !" "Green"
+        Write-Log "[OK] Toutes les opérations ont réussi !" "Green"
         Write-Log "Il est recommandé de redémarrer l'ordinateur." "Yellow"
     } else {
-        Write-Log "⚠ $failCount opération(s) ont échoué." "Yellow"
+        Write-Log "[WARN] $failCount opération(s) ont échoué." "Yellow"
         Write-Log "Vérifiez les logs pour plus de détails." "Yellow"
     }
-    Write-Log "═══════════════════════════════════════════" "Cyan"
+    Write-Log "-------------------------------------------" "Cyan"
 }
 
 # ===== MAIN =====
@@ -322,9 +322,9 @@ $results = @{}
 
 if ($LogPath) {
     # Initialiser le fichier de log
-    "═══════════════════════════════════════════" | Out-File -FilePath $LogPath -Encoding UTF8
+    "-------------------------------------------" | Out-File -FilePath $LogPath -Encoding UTF8
     "Réinitialisation réseau - $(Get-Date)" | Out-File -FilePath $LogPath -Append -Encoding UTF8
-    "═══════════════════════════════════════════" | Out-File -FilePath $LogPath -Append -Encoding UTF8
+    "-------------------------------------------" | Out-File -FilePath $LogPath -Append -Encoding UTF8
 }
 
 # 1. Winsock

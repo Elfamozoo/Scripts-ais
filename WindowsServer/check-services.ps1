@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Vérifie l'état des services critiques Windows (Running / Stopped).
 .DESCRIPTION

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Inventaire réseau complet : IP, MAC, hostname et détails des interfaces.
 .DESCRIPTION
@@ -101,7 +101,7 @@ $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
 # --- 1. Informations locales ---
 if ($IncludeLocal) {
-    Write-Host "── Informations locales ──────────────────────" -ForegroundColor Yellow
+    Write-Host "-- Informations locales ----------------------" -ForegroundColor Yellow
 
     $hostname = $env:COMPUTERNAME
     Write-Host "Hostname: $hostname" -ForegroundColor Green
@@ -142,7 +142,7 @@ if ($IncludeLocal) {
 
 # --- 2. Table ARP (voisins connus) ---
 Write-Host ""
-Write-Host "── Table ARP (Voisins réseau) ─────────────────" -ForegroundColor Yellow
+Write-Host "-- Table ARP (Voisins réseau) -----------------" -ForegroundColor Yellow
 
 $arpTable = arp -a | Select-String '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s+[0-9a-f]{2}[-:][0-9a-f]{2}[-:][0-9a-f]{2}[-:][0-9a-f]{2}[-:][0-9a-f]{2}[-:][0-9a-f]{2}'
 
@@ -191,7 +191,7 @@ Write-Host "  ($arpCount entrées ARP trouvées)"
 # --- 3. Scan optionnel du sous-réseau ---
 if ($ScanSubnet -and $Subnet) {
     Write-Host ""
-    Write-Host "── Scan du sous-réseau $Subnet.x ─────────────" -ForegroundColor Yellow
+    Write-Host "-- Scan du sous-réseau $Subnet.x -------------" -ForegroundColor Yellow
 
     $found = 0
     for ($i = 1; $i -le 254; $i++) {
@@ -235,7 +235,7 @@ if ($ScanSubnet -and $Subnet) {
                     }
                     $inventory += $entry
                 }
-                Write-Host "  [✓] $ip" -ForegroundColor Green
+                Write-Host "  [[OK]] $ip" -ForegroundColor Green
             }
         } catch {
             # Pas de réponse

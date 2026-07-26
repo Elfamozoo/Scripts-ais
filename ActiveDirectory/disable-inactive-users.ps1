@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Désactive les comptes utilisateurs AD inactifs depuis plus de 90 jours.
 .DESCRIPTION
@@ -71,7 +71,7 @@ $log = { param($msg, $level = 'INFO')
 # ---- Date de référence ----
 $refDate = (Get-Date).AddDays(-$InactiveDays)
 $cutoff = $refDate.ToString('yyyy-MM-dd')
-&$log "🔍 Recherche des utilisateurs inactifs depuis $InactiveDays jours (avant le $cutoff)..." 'INFO'
+&$log "[SEARCH] Recherche des utilisateurs inactifs depuis $InactiveDays jours (avant le $cutoff)..." 'INFO'
 
 # ---- Paramètres de requête ----
 $splat = @{
@@ -87,9 +87,9 @@ $splat.Filter = "Enabled -eq '`$true'"
 
 try {
     $users = Get-ADUser @splat
-    &$log "📂 $($users.Count) utilisateurs activés trouvés" 'INFO'
+    &$log "[DIR] $($users.Count) utilisateurs activés trouvés" 'INFO'
 } catch {
-    &$log "❌ Erreur de requête AD : $_" 'ERR'
+    &$log "[ERR] Erreur de requête AD : $_" 'ERR'
     exit 1
 }
 
@@ -135,29 +135,29 @@ $inactiveUsers = $users | Where-Object {
 
 # ---- Rapport ----
 if ($inactiveUsers.Count -eq 0) {
-    &$log "✅ Aucun utilisateur inactif trouvé au-delà de $InactiveDays jours." 'OK'
+    &$log "[OK] Aucun utilisateur inactif trouvé au-delà de $InactiveDays jours." 'OK'
     exit 0
 }
 
-&$log "⚠️  $($inactiveUsers.Count) utilisateur(s) inactif(s) détecté(s) :" 'WARN'
+&$log "[WARN]  $($inactiveUsers.Count) utilisateur(s) inactif(s) détecté(s) :" 'WARN'
 $inactiveUsers | Format-Table -AutoSize -Property Nom, Login, Email, JoursInactif, DerniereConnexion
 
 # Export CSV du rapport
 if ($OutputPath) {
     $inactiveUsers | Export-Csv -Path $OutputPath -NoTypeInformation -Encoding UTF8
-    &$log "📄 Rapport exporté vers : $OutputPath" 'OK'
+    &$log "[FILE] Rapport exporté vers : $OutputPath" 'OK'
 }
 
 # ---- Mode ReportOnly ----
 if ($ReportOnly) {
-    &$log "📋 Mode rapport uniquement — aucune désactivation effectuée." 'INFO'
+    &$log "[CLIP] Mode rapport uniquement - aucune désactivation effectuée." 'INFO'
     exit 0
 }
 
 # ---- Confirmation ----
-$confirmation = Read-Host "`n⚠️  Désactiver ces $($inactiveUsers.Count) utilisateurs ? (O/N)"
+$confirmation = Read-Host "`n[WARN]  Désactiver ces $($inactiveUsers.Count) utilisateurs ? (O/N)"
 if ($confirmation -notin @('O', 'o', 'Oui', 'oui', 'Y', 'y', 'Yes', 'yes')) {
-    &$log "⏹️  Opération annulée par l'utilisateur." 'WARN'
+    &$log "[STOP]  Opération annulée par l'utilisateur." 'WARN'
     exit 0
 }
 
@@ -169,10 +169,10 @@ foreach ($u in $inactiveUsers) {
     if ($PSCmdlet.ShouldProcess($u.Login, "Désactiver le compte (inactif $($u.JoursInactif) jours)")) {
         try {
             Disable-ADAccount -Identity $u.DN -ErrorAction Stop
-            &$log "❌ Désactivé : $($u.Login) ($($u.Nom))" 'OK'
+            &$log "[ERR] Désactivé : $($u.Login) ($($u.Nom))" 'OK'
             $disabled++
         } catch {
-            &$log "❌ Échec désactivation $($u.Login) : $_" 'ERR'
+            &$log "[ERR] Échec désactivation $($u.Login) : $_" 'ERR'
             $errors++
         }
     }
@@ -191,11 +191,11 @@ foreach ($u in $inactiveUsers) {
 }
 
 # ---- Résumé final ----
-Write-Host "`n═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "`n-------------------------------------------" -ForegroundColor Cyan
 Write-Host "  RÉSULTAT DÉSACTIVATION COMPTES INACTIFS" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------" -ForegroundColor Cyan
 Write-Host "  Délai d'inactivité  : $InactiveDays jours"
 Write-Host "  Comptes trouvés     : $($inactiveUsers.Count)"
 Write-Host "  Désactivés          : $disabled"
 Write-Host "  Erreurs             : $errors"
-Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "-------------------------------------------" -ForegroundColor Cyan

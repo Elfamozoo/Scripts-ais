@@ -1,4 +1,4 @@
-﻿﻿<#
+<#
 .SYNOPSIS
     Exporte toutes les règles du pare-feu Windows au format CSV.
 .DESCRIPTION
@@ -31,16 +31,16 @@ $Rules = Get-NetFirewallRule | Where-Object Enabled -eq $true | ForEach-Object {
 
 $Rules | Export-Csv -Path $FilePath -NoTypeInformation -Encoding UTF8
 
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "🛡️ RÈGLES PARE-FEU ACTIVES" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
+Write-Host "[SHIELD] RÈGLES PARE-FEU ACTIVES" -ForegroundColor Cyan
+Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 
 $In = ($Rules | Where-Object Direction -eq 'Inbound').Count
 $Out = ($Rules | Where-Object Direction -eq 'Outbound').Count
 $Allow = ($Rules | Where-Object Action -eq 'Allow').Count
 $Block = ($Rules | Where-Object Action -eq 'Block').Count
 
-Write-Host "📊 $($Rules.Count) règles actives"
-Write-Host "   ↳ Entrant: $In  |  Sortant: $Out"
-Write-Host "   ↳ Autoriser: $Allow  |  Bloquer: $Block"
-Write-Host "📁 Export: $FilePath" -ForegroundColor Green
+Write-Host "[STATS] $($Rules.Count) règles actives"
+Write-Host "   -> Entrant: $In  |  Sortant: $Out"
+Write-Host "   -> Autoriser: $Allow  |  Bloquer: $Block"
+Write-Host "[FILE] Export: $FilePath" -ForegroundColor Green

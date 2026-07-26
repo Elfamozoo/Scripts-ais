@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Effectue des résolutions DNS complètes (A, MX, CNAME, NS, TXT, AAAA).
 .DESCRIPTION
@@ -52,7 +52,7 @@ Write-Host ""
 $results = @()
 
 foreach ($type in $RecordTypes) {
-    Write-Host "── [$type] ────────────────────────" -ForegroundColor Yellow
+    Write-Host "-- [$type] ------------------------" -ForegroundColor Yellow
 
     try {
         $params = @{
