@@ -11,11 +11,20 @@
     .\harden-windows.ps1 -Level Strict
 #>
 
-param([ValidateSet('Basic','Standard','Strict')][string]$Level = 'Standard')
+[CmdletBinding(SupportsShouldProcess, ConfirmImpact='High')]
+param(
+    [ValidateSet('Basic','Standard','Strict')]
+    [string]$Level = 'Standard'
+)
 
-# Vérifier les droits admin
+# Verifier les droits admin
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "[ERR] Ce script nécessite les droits administrateur." -ForegroundColor Red
+    Write-Host "[ERR] Ce script necessite les droits administrateur." -ForegroundColor Red
+    exit
+}
+
+if (-not $PSCmdlet.ShouldProcess("$Level hardening on $env:COMPUTERNAME", "Apply Windows hardening", "HARDENING")) {
+    Write-Host "[WARN] Operation annulee (WhatIf)" -ForegroundColor Yellow
     exit
 }
 
@@ -27,8 +36,8 @@ Write-Host "---------------------------------------------------" -ForegroundColo
 Write-Host "`n[INFO] Politiques de mot de passe..." -ForegroundColor Yellow
 net accounts /minpwlen:8 /maxpwage:60 /minpwage:1 /lockoutthreshold:5 /lockoutduration:30 /lockoutwindow:30
 
-# 2. Désactiver SMBv1
-Write-Host "[INFO] Désactivation SMBv1..." -ForegroundColor Yellow
+# 2. Desactiver SMBv1
+Write-Host "[INFO] Desactivation SMBv1..." -ForegroundColor Yellow
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "SMB1" -Type DWord -Value 0 -Force
 Disable-WindowsOptionalFeature -Online -FeatureName "SMB1Protocol" -NoRestart -ErrorAction SilentlyContinue
 

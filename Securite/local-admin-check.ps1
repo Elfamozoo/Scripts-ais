@@ -26,10 +26,26 @@ $Found = $false
 foreach ($Group in $GroupNames) {
     if ($Found) { break }
     
-    if ($ComputerName -eq $env:COMPUTERNAME -or $ComputerName -eq "localhost") {
+    if ($ComputerName -eq $env:COMPUTERNAME -or $ComputerName -eq "localhost" -or $ComputerName -eq "127.0.0.1") {
         $Output = net localgroup $Group 2>$null
     } else {
-        $Output = net localgroup $Group /domain 2>$null
+        # Machine distante via WMI
+        try {
+            $wmi = Get-WmiObject -Class Win32_Group -ComputerName $ComputerName -Filter "SID='S-1-5-32-544'" -ErrorAction Stop
+            $remoteMembers = Get-WmiObject -Class Win32_GroupUser -ComputerName $ComputerName -Filter "GroupComponent='Win32_Group.Domain=`"$($wmi.Domain)`",Name=`"$($wmi.Name)`"'" -ErrorAction Stop
+            if ($remoteMembers) {
+                $Members = $remoteMembers | ForEach-Object {
+                    $Parts = $_.PartComponent -split ","
+                    $Name = ($Parts[0] -split "=")[1] -replace '"',''
+                    $Domain = ($Parts[1] -split "=")[1] -replace '"','' -replace '>',''
+                    "$Domain\$Name"
+                }
+                $Found = $true
+                break
+            }
+        } catch {
+            continue
+        }
     }
     
     if ($Output -and $Output.Count -gt 4) {

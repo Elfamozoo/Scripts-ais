@@ -17,22 +17,22 @@ param(
     [switch]$ExportCSV
 )
 
-$Software = Get-WmiObject -Class Win32_Product -ComputerName $ComputerName -ErrorAction SilentlyContinue
-
-if (-not $Software) {
-    # Fallback registre
-    $Paths = @("HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
-               "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*")
-
-    $Software = $Paths | ForEach-Object { Get-ItemProperty $_ -ErrorAction SilentlyContinue } |
-        Where-Object { $_.DisplayName -and $_.DisplayName -ne $null } |
-        Select-Object @{N='Nom';E={$_.DisplayName}},
-                      @{N='Version';E={$_.DisplayVersion}},
-                      @{N='Fabricant';E={$_.Publisher}},
-                      @{N='InstallDate';E={$_.InstallDate}},
-                      @{N='Taille_KB';E={[int]($_.EstimatedSize / 1024)}} |
-        Sort-Object Nom
-}
+# Bannir Win32_Product (declenche reconfiguration MSI)
+$Software = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\" -ErrorAction SilentlyContinue |
+    Get-ItemProperty | Where-Object { $_.DisplayName } |
+    Select-Object @{N='Nom';E={$_.DisplayName}},
+                  @{N='Version';E={$_.DisplayVersion}},
+                  @{N='Fabricant';E={$_.Publisher}},
+                  @{N='InstallDate';E={$_.InstallDate}},
+                  @{N='Taille_KB';E={[int]($_.EstimatedSize / 1024)}}
+$Software += Get-ChildItem "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\" -ErrorAction SilentlyContinue |
+    Get-ItemProperty | Where-Object { $_.DisplayName } |
+    Select-Object @{N='Nom';E={$_.DisplayName}},
+                  @{N='Version';E={$_.DisplayVersion}},
+                  @{N='Fabricant';E={$_.Publisher}},
+                  @{N='InstallDate';E={$_.InstallDate}},
+                  @{N='Taille_KB';E={[int]($_.EstimatedSize / 1024)}}
+$Software = $Software | Sort-Object Nom
 
 Write-Host "---------------------------------------------------" -ForegroundColor Cyan
 Write-Host "[PACKAGE] LOGICIELS INSTALLÉS - $ComputerName" -ForegroundColor Cyan

@@ -45,7 +45,7 @@ function Get-PortService {
         8080 = "HTTP-Proxy"
         8443 = "HTTPS-Alt"
     }
-    return if ($services.ContainsKey($Port)) { $services[$Port] } else { "Inconnu" }
+    if ($services.ContainsKey($Port)) { return $services[$Port] } else { return "Inconnu" }
 }
 
 function Get-Targets {

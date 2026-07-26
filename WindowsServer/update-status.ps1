@@ -43,7 +43,20 @@ param(
     [int]$DaysHistory = 30
 )
 
-# ---------- Fonctions ----------
+if ($ComputerName -ne $env:COMPUTERNAME -and $ComputerName -ne "localhost" -and $ComputerName -ne "127.0.0.1") {
+    Write-Host "[WARN] COM Microsoft.Update.Session ne supporte pas le distant."
+    Write-Host "[WARN] Utilisation de Invoke-Command sur $ComputerName..."
+    try {
+        Invoke-Command -ComputerName $ComputerName -FilePath $MyInvocation.MyCommand.Path -ErrorAction Stop
+        exit
+    } catch {
+        Write-Host "[ERR] Impossible de lancer la mise a jour a distance."
+        Write-Host "       Activez WinRM: Enable-PSRemoting -Force"
+        exit 1
+    }
+}
+
+Write-Host "[OK] Analyse des mises a jour sur $env:COMPUTERNAME"
 function Write-Log {
     param([string]$Message, [string]$Level = "INFO")
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
