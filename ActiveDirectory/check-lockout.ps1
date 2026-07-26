@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Vérifie et analyse les comptes AD verrouillés (locked-out).
 .DESCRIPTION

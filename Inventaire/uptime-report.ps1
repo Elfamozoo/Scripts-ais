@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Vérifie l'uptime des serveurs (local ou liste depuis un fichier).
 .DESCRIPTION

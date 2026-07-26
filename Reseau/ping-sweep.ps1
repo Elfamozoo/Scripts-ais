@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Ping sweep sur une plage d'adresses IP.
 .DESCRIPTION

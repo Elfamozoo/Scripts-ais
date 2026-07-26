@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Audit complet de l'Active Directory : utilisateurs, groupes, ordinateurs et OU.
 .DESCRIPTION

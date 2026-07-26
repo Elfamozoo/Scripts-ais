@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Exporte toutes les règles du pare-feu Windows au format CSV.
 .DESCRIPTION

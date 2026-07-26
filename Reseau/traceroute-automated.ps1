@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Traceroute automatisé vers une destination avec export des résultats.
 .DESCRIPTION

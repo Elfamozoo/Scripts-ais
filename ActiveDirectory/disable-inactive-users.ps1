@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Désactive les comptes utilisateurs AD inactifs depuis plus de 90 jours.
 .DESCRIPTION

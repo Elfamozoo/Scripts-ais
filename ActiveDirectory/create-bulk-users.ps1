@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Crée des utilisateurs Active Directory en masse depuis un fichier CSV.
 .DESCRIPTION

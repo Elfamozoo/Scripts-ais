@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Réinitialisation complète de la pile réseau Windows.
 .DESCRIPTION

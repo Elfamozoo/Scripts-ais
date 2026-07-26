@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     État des mises à jour Windows installées et en attente.
 .DESCRIPTION

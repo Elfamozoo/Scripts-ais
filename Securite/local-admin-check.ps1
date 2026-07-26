@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Vérifie qui est administrateur local sur une machine locale ou distante.
 .DESCRIPTION
